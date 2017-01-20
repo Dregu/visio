@@ -1,0 +1,14 @@
+@import url('https://fonts.googleapis.com/css?family=Ubuntu:300');
+
+body {
+	background: #050505;
+	text-align: center;
+	font-family: 'Ubuntu', sans-serif;
+	font-weight: 300;
+	letter-spacing: .15em;
+	color: #fff;
+}
+canvas {
+	border: 1px solid #eee;
+	margin-bottom: 20px;
+}
