@@ -1,7 +1,7 @@
 var player = new Player({ useWorker: true, webgl: 'auto' })
 document.getElementById('container').appendChild(player.canvas)
 
-var ws = new WebSocket('ws://10.0.0.16:8081/')
+var ws = new ReconnectingWebSocket('ws://10.0.0.16:8081/')
 ws.binaryType = 'arraybuffer'
 ws.onopen = function (e) {
 	console.log('websocket connected')
