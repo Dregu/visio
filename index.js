@@ -44,7 +44,7 @@ if (conf.get('tcpport')) {
 }
 
 if (conf.get('udpport')) {
-	const udpServer = dgram.createSocket('udp6')
+	const udpServer = dgram.createSocket('udp4')
 	udpServer.on('listening', () => {
 		var address = udpServer.address()
 		console.log(`UDP server listening on ${address.address}:${address.port}`)
