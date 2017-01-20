@@ -1,4 +1,4 @@
-startStream('container', 'ws://10.0.0.16:8081', true, 'auto', 2000)
+startStream('container', 'ws://'+window.location.hostname+':8081', true, 'auto', 2000)
 
 function startStream(playerElement, wsUri, useWorker, webgl, reconnectMs) {
 	if (!window.player) {
