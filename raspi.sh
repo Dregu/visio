@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # UDP mode, with extra options for my halogen lighting. Don't worry about it...
-raspivid -w 848 -h 480 -t 0 -fps 25 -ih -b 700000 -pf baseline -mm average -ISO 800 -awb off -awbg 1.0,2.5 -ex fixedfps -ev 10 -co 50 -br 65 -o - | socat - udp4-datagram:localhost:8000,shut-none,reuseaddr
+raspivid -w 848 -h 480 -t 0 -fps 25 -ih -b 700000 -pf baseline -mm average -ISO 800 -awb off -awbg 1.0,2.5 -ex fixedfps -ev 10 -co 50 -br 65 -o - | socat - udp4-datagram:pei.li:8000,shut-none,reuseaddr
 
 # TCP mode, minimal setup
 #raspivid -w 848 -h 480 -t 0 -fps 25 -ih -b 700000 -pf baseline -o - | nc localhost 8000
