@@ -8,10 +8,11 @@ is about 4 frames or 160ms.
 ```
 npm install
 ```
-If you are going to use raspi.sh as is, also
+If you are going to use UDP, also install socat
 ```
-apt install socat pv
+apt install socat
 ```
+Tested on raspbian jessie. With node v7.4.0.
 
 ## Server
 Receives h264 stream from raspivid and serves it to websocket clients.
