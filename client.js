@@ -2,7 +2,7 @@ startStream('container', 'ws://'+window.location.hostname+':8081', true, 'auto',
 
 function startStream(playerElement, wsUri, useWorker, webgl, reconnectMs) {
 	if (!window.player) {
-		window.player = new Player({ useWorker: useWorker, webgl: webgl })
+		window.player = new Player({ useWorker: useWorker, webgl: webgl, size: { width: 848, height: 480 } })
 		document.getElementById(playerElement).appendChild(window.player.canvas)
 		window.debugger = new debug(playerElement) //show statistics, you can remove me if you dont need stats
 	}
@@ -52,19 +52,21 @@ function debug(playerElement) {
 	this.frames = 0
 	this.total = 0
 	this.secondTotal = 0
+	this.playerWidth = 0
+	this.playerHeight = 0
 	this.statsElement = document.createElement('div')
 	document.getElementById(playerElement).appendChild(this.statsElement)
 	window.player.onPictureDecoded = function(buffer, width, height, infos) {
-		window.debugger.frame()
-		window.debugger.playerWidth = width
-		window.debugger.playerHeight = height
+		window.debugger.frame(width, height)
 	}
 	this.nal = function(bytes) {
 		this.nals++
 		this.total += bytes
 		this.secondTotal += bytes
 	}
-	this.frame = function() {
+	this.frame = function(w, h) {
+		this.playerWidth = w
+		this.playerHeight = h
 		this.frames++
 		var now = +new Date(), delta = now - window.debugger.last
 		this.fps.tick(delta)

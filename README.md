@@ -19,10 +19,11 @@ Start with ```node index.js --udpport 8000 --wsport 8081``` for UDP mode
 or ```node index.js --tcpport 8000 --wsport 8081``` for TCP mode.
 
 ## Streamer
-Streams live h264 from raspivid to the server. Check raspi.sh and start
-with ```./raspi.sh```. You could use something like
+Streams live h264 from raspivid (or gstreamer) to the server. Check raspi.sh
+and start with ```./raspi.sh```. You could use something like
 ```ffmpeg -re -i foo.mp4 -c:v copy -f h264 udp://localhost:8000```
-to stream anything, just remember Broadway only supports h264 baseline and no audio.
+to stream anything, just remember Broadway only supports h264 baseline and
+no audio.
 
 ## HTTP-server
 You should get one. Tested with ```http-server``` from npm.

@@ -4,13 +4,13 @@ const WSServer = require('ws').Server
 const Split = require('stream-split')
 const NALSeparator = new Buffer([0,0,0,1])
 
-var wsServer, conf = require('nconf')
+var wsServer, conf = require('nconf'), headers = []
 conf.argv().defaults({
 	tcpport: false,
 	udpport: false,
 	wsport: false
 })
-if(conf.get('tcpport') && conf.get('udpport')) throw new Error('dont use tcp and udp together')
+if (conf.get('tcpport') && conf.get('udpport')) throw new Error('dont use tcp and udp together')
 
 function broadcast(data) {
 	wsServer.clients.forEach(function(ws) {
@@ -26,10 +26,12 @@ if (conf.get('tcpport')) {
 		socket.on('end', () => {
 			console.log('streamer disconnected')
 		})
+		headers = []
 		const NALSplitter = new Split(NALSeparator)
 		NALSplitter.on('data', (data) => {
 			if (wsServer && wsServer.clients.length > 0) {
 				data = Buffer.concat([NALSeparator, data])
+				if (headers.length < 3) headers.push(data)
 				broadcast(data)
 			}
 		}).on('error', (e) => {
@@ -70,6 +72,9 @@ if (conf.get('wsport')) {
 	console.log(`WS server listening on ${wsServer.options.host}:${wsServer.options.port}`)
 	wsServer.on('connection', (ws) => {
 		console.log('client connected, watching '+wsServer.clients.length)
+		for(let i in headers) {
+			ws.send(headers[i])
+		}
 		ws.on('close', (ws, id) => {
 			console.log('client disconnected, watching '+wsServer.clients.length)
 		})
