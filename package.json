@@ -1,7 +1,7 @@
 {
   "name": "visio",
   "version": "1.0.0",
-  "description": "",
+  "description": "Barebones live streaming h264 from raspivid to browser with node and broadway",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
