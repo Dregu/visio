@@ -7,5 +7,11 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Dregu",
-  "license": "MIT"
+  "license": "MIT",
+  "repository": "Dregu/visio",
+  "dependencies": {
+    "nconf": "^0.8.4",
+    "stream-split": "^1.1.0",
+    "ws": "^1.1.1"
+  }
 }
