@@ -75,7 +75,7 @@ function debug(playerElement) {
 		var date = new Date(null)
 		date.setSeconds((+new Date()-window.debugger.started)/1000)
 		var dur = date.toISOString().substr(11, 8)
-		window.debugger.statsElement.innerHTML = 'FPS: '+Math.floor(1/window.debugger.fps.avg()*1000)+', '+(window.debugger.secondTotal/1024).toFixed(2)+' KiB/s, total '+mib+' MiB, '+window.debugger.nals+' NAL units, '+window.debugger.frames+' frames received in '+dur
+		window.debugger.statsElement.innerHTML = window.debugger.playerWidth+'x'+window.debugger.playerHeight+', '+Math.floor(1/window.debugger.fps.avg()*1000)+' fps, '+(window.debugger.secondTotal/1024).toFixed(2)+' KiB/s, total '+mib+' MiB, '+window.debugger.nals+' NAL units, '+window.debugger.frames+' frames in '+dur
 		window.debugger.secondTotal = 0
 	}, 1000)
 }
