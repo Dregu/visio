@@ -8,9 +8,7 @@ body {
 	letter-spacing: .15em;
 	color: #fff;
 }
-#container {
-	margin-bottom: 20px;
-}
 canvas {
 	border: 1px solid #eee;
+	margin-bottom: 20px;
 }

@@ -20,8 +20,12 @@ function startStream(playerId, wsUri, useWorker, webgl, reconnectMs) {
 	function exitHandler() {
         	if(document.fullScreenElement || document.webkitCurrentFullScreenElement || document.mozFullScreenElement) {
 			window.player.canvas.style.width = '100vw'
+			window.player.canvas.style.marginBottom = '0'
+			window.player.canvas.style.border = '0'
 		} else {
 			window.player.canvas.style.width = ''
+			window.player.canvas.style.marginBottom = '20px'
+			window.player.canvas.style.border = '1px solid #eee'
 		}
 	}
 
