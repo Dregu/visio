@@ -1,11 +1,30 @@
 startStream('container', window.location.protocol.replace(/http/, 'ws')+'//'+window.location.host+'/visio-ws', true, 'auto', 2000)
 
-function startStream(playerElement, wsUri, useWorker, webgl, reconnectMs) {
+function startStream(playerId, wsUri, useWorker, webgl, reconnectMs) {
 	if (!window.player) {
 		window.player = new Player({ useWorker: useWorker, webgl: webgl, size: { width: 848, height: 480 } })
-		document.getElementById(playerElement).appendChild(window.player.canvas)
-		window.debugger = new debug(playerElement) //show statistics, you can remove me if you dont need stats
+		var playerElement = document.getElementById(playerId)
+		playerElement.appendChild(window.player.canvas)
+		window.player.canvas.addEventListener('dblclick', function() {
+			if(window.player.canvas.requestFullScreen) window.player.canvas.requestFullScreen();
+			else if(window.player.canvas.webkitRequestFullScreen) window.player.canvas.webkitRequestFullScreen();
+			else if(window.player.canvas.mozRequestFullScreen) window.player.canvas.mozRequestFullScreen();
+		})
+		window.debugger = new debug(playerId) //show statistics, you can remove me if you dont need stats
 	}
+	document.addEventListener('webkitfullscreenchange', exitHandler, false);
+	document.addEventListener('mozfullscreenchange', exitHandler, false);
+	document.addEventListener('fullscreenchange', exitHandler, false);
+	document.addEventListener('MSFullscreenChange', exitHandler, false);
+
+	function exitHandler() {
+        	if(document.fullScreenElement || document.webkitCurrentFullScreenElement || document.mozFullScreenElement) {
+			window.player.canvas.style.width = '100vw'
+		} else {
+			window.player.canvas.style.width = ''
+		}
+	}
+
 	var ws = new WebSocket(wsUri)
 	ws.binaryType = 'arraybuffer'
 	ws.onopen = function (e) {
@@ -18,11 +37,10 @@ function startStream(playerElement, wsUri, useWorker, webgl, reconnectMs) {
 	ws.onclose = function (e) {
 		console.log('websocket disconnected')
 		if (reconnectMs > 0) {
-			var el = playerElement, uri = wsUri
+			var el = playerId, uri = wsUri
 			setTimeout(function() { startStream(el, uri) }, reconnectMs)
 		}
 	}
-
 }
 
 // debugger stuff
@@ -44,7 +62,7 @@ function avgFPS(length) {
 	return this
 }
 
-function debug(playerElement) {
+function debug(playerId) {
 	this.started = +new Date()
 	this.fps = new avgFPS(50)
 	this.last = +new Date()
@@ -55,7 +73,7 @@ function debug(playerElement) {
 	this.playerWidth = 0
 	this.playerHeight = 0
 	this.statsElement = document.createElement('div')
-	document.getElementById(playerElement).appendChild(this.statsElement)
+	document.getElementById(playerId).appendChild(this.statsElement)
 	window.player.onPictureDecoded = function(buffer, width, height, infos) {
 		window.debugger.frame(width, height)
 	}
