@@ -50,7 +50,7 @@ if (conf.get('tcpport')) {
 		const NALSplitter = new Split(NALSeparator)
 		NALSplitter.on('data', (data) => {
 			if (wsServer && wsServer.clients.length > 0) {
-				data = Buffer.concat([NALSeparator, data])
+				//data = Buffer.concat([NALSeparator, data])
 				if (headers.length < 3) headers.push(data)
 				broadcast(data)
 			}
@@ -78,7 +78,7 @@ if (conf.get('udpport')) {
 	const NALSplitter = new Split(NALSeparator)
 	NALSplitter.on('data', (data) => {
 		if (wsServer && wsServer.clients.length > 0) {
-			data = Buffer.concat([NALSeparator, data])
+			//data = Buffer.concat([NALSeparator, data])
 			broadcast(data)
 		}
 	}).on('error', (e) => {
