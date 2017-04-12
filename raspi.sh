@@ -1,7 +1,17 @@
-#!/bin/sh
+#!/bin/bash
 
 # UDP mode, with extra options for my halogen lighting. Don't worry about it...
-raspivid -w 848 -h 480 -t 0 -fps 25 -ih -b 700000 -pf baseline -mm average -ISO 800 -awb off -awbg 1.0,2.5 -ex fixedfps -ev 10 -co 50 -br 65 -o - | socat - udp4-datagram:pei.li:8000,shut-none,reuseaddr
+#raspivid -w 848 -h 480 -t 0 -fps 25 -ih -b 700000 -pf baseline -mm average -ISO 800 -awb off -awbg 1.0,2.5 -ex fixedfps -ev 0 -co 50 -br 65 -o - |\
+raspivid -w 960 -h 544 -t 0 -fps 25 -ih -g 50 -b 1000000 -pf baseline -mm average -ISO 400 -awb off -awbg 1.0,2.5 -ex fixedfps -ev 0 -co 50 -br 58 -roi 0,0,1,1 -o - |\
+ nc stream.wappuradio.fi 15000
+ #socat - tcp:stream.wappuradio.fi:15000,shut-none
+
+#  gst-launch-1.0 fdsrc ! h264parse ! rtph264pay config-interval=1 ! udpsink host=stream.wappuradio.fi port=7000
+#  tee >(socat - tcp:stream.wappuradio.fi:9000,shut-none,reuseaddr) |
+
+
+#  tee >(socat - tcp:stream.wappuradio.fi:7000,shut-none,reuseaddr) |\
+#  socat - tcp:stream.wappuradio.fi:9000,shut-none,reuseaddr
 
 # TCP mode, minimal setup
 #raspivid -w 848 -h 480 -t 0 -fps 25 -ih -b 700000 -pf baseline -o - | nc localhost 8000
