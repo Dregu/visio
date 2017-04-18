@@ -14,7 +14,8 @@ conf.argv().defaults({
 	tcpport: false,
 	udpport: false,
 	wsport: false,
-	queryport: false
+	queryport: false,
+	limit: 150
 })
 if (conf.get('tcpport') && conf.get('udpport')) throw new Error('dont use tcp and udp together')
 
@@ -95,6 +96,17 @@ if (conf.get('wsport')) {
 	wsServer = new WSServer({ port: conf.get('wsport') })
 	console.log(`WS server listening on ${wsServer.options.host}:${wsServer.options.port}`)
 	wsServer.on('connection', (ws) => {
+		var currentClients = 0
+		wsServer.clients.forEach((ws) => {
+			if (ws.readyState === 1) {
+				currentClients++
+			}
+		})
+		if(currentClients > conf.get('limit')) {
+			console.log('client rejected, limit reached')
+			ws.close()
+			return
+		}
 		console.log('client connected, watching '+wsServer.clients.length)
 		for(let i in headers) {
 			ws.send(headers[i])
