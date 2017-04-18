@@ -34,8 +34,8 @@ if (conf.get('queryport')) {
 
 function broadcast(data) {
 	wsServer.clients.forEach((ws) => {
-		if (ws.readyState == 1) {
-			ws.send(data, { binary: true }, (e) => {})
+		if (ws.readyState === 1) {
+			ws.send(data, { binary: true })
 		}
 	})
 }
