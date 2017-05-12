@@ -10,7 +10,6 @@
   "license": "MIT",
   "repository": "Dregu/visio",
   "dependencies": {
-    "bufferutil": "1",
     "express": "^4.15.2",
     "nconf": "^0.8.4",
     "stream-split": "^1.1.0",

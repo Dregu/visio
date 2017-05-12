@@ -51,8 +51,6 @@ if (conf.get('tcpport')) {
     const NALSplitter = new Split(NALSeparator)
     NALSplitter.on('data', (data) => {
       if (wsServer && wsServer.clients.length > 0) {
-        // why is this concat needed with (lib)x264 but not raspivid!?
-        data = Buffer.concat([NALSeparator, data])
         if (headers.length < 3) headers.push(data)
         broadcast(data)
       }
@@ -82,8 +80,6 @@ if (conf.get('udpport')) {
   const NALSplitter = new Split(NALSeparator)
   NALSplitter.on('data', (data) => {
     if (wsServer && wsServer.clients.length > 0) {
-      // this shit again...
-      data = Buffer.concat([NALSeparator, data])
       broadcast(data)
     }
   }).on('error', (e) => {
@@ -102,13 +98,7 @@ if (conf.get('wsport')) {
     `WS server listening on`, conf.get('wsport')
   )
   wsServer.on('connection', (ws) => {
-    var currentClients = 0
-    wsServer.clients.forEach((ws) => {
-      if (ws.readyState === 1) {
-        currentClients++
-      }
-    })
-    if (currentClients > conf.get('limit')) {
+    if (wsServer.clients.length >= conf.get('limit')) {
       console.log('client rejected, limit reached')
       ws.close()
       return

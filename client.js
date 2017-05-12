@@ -29,20 +29,27 @@ function startStream(playerId, wsUri, useWorker, webgl, reconnectMs) {
 		}
 	}
 
+	var separator = new Uint8Array([0, 0, 0, 1])
+	function addSeparator(buffer) {
+		var tmp = new Uint8Array(4+buffer.byteLength)
+		tmp.set(separator, 0)
+		tmp.set(new Uint8Array(buffer), 4)
+		return tmp.buffer
+	}
+
 	var ws = new WebSocket(wsUri)
 	ws.binaryType = 'arraybuffer'
 	ws.onopen = function (e) {
 		console.log('websocket connected')
 		ws.onmessage = function (msg) {
-			window.player.decode(new Uint8Array(msg.data))
+			window.player.decode(new Uint8Array(addSeparator(msg.data)))
 			if(window.debugger) window.debugger.nal(msg.data.byteLength)
 		}
 	}
 	ws.onclose = function (e) {
 		console.log('websocket disconnected')
 		if (reconnectMs > 0) {
-			var el = playerId, uri = wsUri
-			setTimeout(function() { startStream(el, uri) }, reconnectMs)
+			setTimeout(function() { startStream(playerId, wsUri, useWorker, webgl, reconnectMs) }, reconnectMs)
 		}
 	}
 }
