@@ -2,7 +2,7 @@
 
 const net = require('net')
 const dgram = require('dgram')
-const WSServer = require('ws').Server
+const WSServer = require('uws').Server
 const Split = require('stream-split')
 const NALSeparator = new Buffer([0, 0, 0, 1])
 const express = require('express')
@@ -15,7 +15,7 @@ conf.argv().defaults({
   tcpport: 8000,
   udpport: 8000,
   wsport: 8081,
-  queryport: 8080,
+  queryport: false,
   limit: 150
 })
 
@@ -99,7 +99,7 @@ if (conf.get('udpport')) {
 if (conf.get('wsport')) {
   wsServer = new WSServer({ port: conf.get('wsport') })
   console.log(
-    `WS server listening on ${wsServer.options.host}:${wsServer.options.port}`
+    `WS server listening on`, conf.get('wsport')
   )
   wsServer.on('connection', (ws) => {
     var currentClients = 0
