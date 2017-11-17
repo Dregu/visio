@@ -1,4 +1,4 @@
-startStream('container', window.location.protocol.replace(/http/, 'ws')+'//'+window.location.hostname+':8081', true, 'auto', 2000)
+startStream('container', window.location.protocol.replace(/http/, 'ws')+'//'+window.location.hostname+'/visio-ws', true, 'auto', 2000)
 
 function startStream(playerId, wsUri, useWorker, webgl, reconnectMs) {
 	if (!window.player) {

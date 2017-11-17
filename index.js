@@ -15,7 +15,7 @@ conf.argv().defaults({
   tcpport: 8000,
   udpport: 8000,
   wsport: 8081,
-  queryport: false,
+  queryport: 8082,
   limit: 150
 })
 
