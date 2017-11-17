@@ -110,5 +110,8 @@ if (conf.get('wsport')) {
     ws.on('close', (ws, id) => {
       console.log('client disconnected, watching ' + wsServer.clients.length)
     })
+    ws.on('error', (e) => {
+      console.log('websocket error ' + e)
+    })
   })
 }
