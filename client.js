@@ -10,7 +10,7 @@ function startStream(playerId, wsUri, useWorker, webgl, reconnectMs) {
 			else if(window.player.canvas.webkitRequestFullScreen) window.player.canvas.webkitRequestFullScreen();
 			else if(window.player.canvas.mozRequestFullScreen) window.player.canvas.mozRequestFullScreen();
 		})
-		window.debugger = new debug(playerId) //show statistics, you can remove me if you dont need stats
+		//window.debugger = new debug(playerId) //show statistics, you can remove me if you dont need stats
 	}
 	document.addEventListener('webkitfullscreenchange', exitHandler, false);
 	document.addEventListener('mozfullscreenchange', exitHandler, false);
