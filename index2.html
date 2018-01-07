@@ -1,40 +1,34 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="description" content="jMuxer - a simple javascript mp4 muxer for non-standard streaming communications protocol">
-    <meta name="keywords" content="h264 player, mp4 player, mse, mp4 muxing, jmuxer, aac player">
-    <title>JMuxer demo</title>
+<meta charset="UTF-8">
+<title>visio 2.0</title>
 </head>
 <body>
 <div id="container" style="width: 960px; margin: 0 auto">
-    <video width="906" controls autoplay id="player"></video>
+<video width="960" controls autoplay id="player"></video>
 </div>
-<script src="bundle.js"></script>
 <script type="text/javascript" src="jmuxer.min.js"></script>
 <script>
-
 function concatTypedArrays(a, b) { // a, b TypedArray of same type
     var c = new (a.constructor)(a.length + b.length);
     c.set(a, 0);
     c.set(b, a.length);
     return c;
 }
-
 function concatBuffers(a, b) {
     return concatTypedArrays(
         new Uint8Array(a.buffer || a), 
         new Uint8Array(b.buffer || b)
     ).buffer;
 }
-
 function concatBytes(ui8a, byte) {
     var b = new Uint8Array(1);
     b[0] = byte;
     return concatTypedArrays(ui8a, b);
 }
 
-  function parse(data) {
+function parse(data) {
       var input = new Uint8Array(data),
           dv = new DataView(input.buffer),
           duration,
@@ -52,25 +46,23 @@ function concatBytes(ui8a, byte) {
         video: video,
         duration: duration
       };
- }
+}
 
-        var separator = new Uint8Array([0, 0, 0, 1])
-        var aseparator = new Uint8Array([255, 241])
-
+var separator = new Uint8Array([0, 0, 0, 1])
+var aseparator = new Uint8Array([255, 241])
 
 var h264buffer = new Uint8Array();
 var audiobuffer = new Uint8Array();
 var time = +new Date;
 var atime = +new Date;
 
-
     var socketURL = 'ws://'+window.location.hostname+':8081';
     var jmuxer = new JMuxer({
         node: 'player',
-        mode: 'audio',
-        flushingTime: 0.1,
+        mode: 'video',
+        //flushingTime: 1,
         clearBuffer: false,
-        fps: 30,
+        fps: 29.97,
         debug: false
      });
 
@@ -79,16 +71,13 @@ var atime = +new Date;
      ws.addEventListener('message',function(event) {
          //console.log('video '+((+new Date)-time));
          time = +new Date;
-         h264buffer = concatTypedArrays(h264buffer, concatTypedArrays(separator, new Uint8Array(event.data)));
-         //jmuxer.feed({video: concatTypedArrays(separator, new Uint8Array(event.data))});
+         if(document.visibilityState == 'visible') h264buffer = concatTypedArrays(h264buffer, concatTypedArrays(separator, new Uint8Array(event.data)));
      });
      var inter = setInterval(function() {
-          jmuxer.feed({video: h264buffer});
+          if(document.visibilityState == 'visible' && h264buffer.length > 0) jmuxer.feed({video: h264buffer});
           h264buffer = new Uint8Array();
-     }, 500);
+     }, 200);
 
-     //var CJ = require('./cjopus.js');
-     //var encoder = new CJOpus(48000, 2);
      var aws = new WebSocket('ws://'+window.location.hostname+':8082');
      aws.binaryType = 'arraybuffer';
      aws.addEventListener('message',function(event) {
