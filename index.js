@@ -4,25 +4,24 @@ const net = require('net')
 const dgram = require('dgram')
 const WSServer = require('uws').Server
 const Split = require('stream-split')
-const NALSeparator = new Buffer([0, 0, 0, 1])
-const AACSeparator = new Buffer([255, 241])
 const express = require('express')
 const systemd = require('systemd')
 const app = express()
 
-var wsServer, awsServer, conf = require('nconf'),
-  headers = []
+var wsServer, conf = require('nconf'), headers = [], Separator = new Buffer([0, 0, 0, 1])
+
 conf.argv().defaults({
   tcpport: 8000,
   udpport: 8000,
-  atcpport: 8001,
-  audpport: 8001,
   wsport: 8081,
-  awsport: 8082,
   queryport: false,
   limit: 150,
-  alimit: 150
+  separator: false
 })
+
+if (conf.get('separator')) {
+  Separator = new Buffer(conf.get('separator').split(','))
+}
 
 if (conf.get('queryport')) {
   app.get('/', (req, res) => {
@@ -46,14 +45,6 @@ function broadcast(data) {
   })
 }
 
-function abroadcast(data) {
-  awsServer.clients.forEach((aws) => {
-    if (aws.readyState === 1) {
-      aws.send(data, { binary: true })
-    }
-  })
-}
-
 if (conf.get('tcpport')) {
   const tcpServer = net.createServer((socket) => {
     console.log('streamer connected')
@@ -61,8 +52,8 @@ if (conf.get('tcpport')) {
       console.log('streamer disconnected')
     })
     headers = []
-    const NALSplitter = new Split(NALSeparator)
-    NALSplitter.on('data', (data) => {
+    const Splitter = new Split(Separator)
+    Splitter.on('data', (data) => {
       if (wsServer && wsServer.clients.length > 0) {
         if (headers.length < 3) headers.push(data)
         broadcast(data)
@@ -71,42 +62,13 @@ if (conf.get('tcpport')) {
       console.log('splitter error ' + e)
       process.exit(0)
     })
-    socket.pipe(NALSplitter)
+    socket.pipe(Splitter)
   })
   tcpServer.listen(conf.get('tcpport'))
   if (conf.get('tcpport') == 'systemd') {
     console.log('TCP server listening on systemd socket')
   } else {
     var address = tcpServer.address()
-    if (address) console.log(
-      `TCP server listening on ${address.address}:${address.port}`)
-  }
-}
-
-if (conf.get('atcpport')) {
-  const atcpServer = net.createServer((socket) => {
-    console.log('streamer connected')
-    socket.on('end', () => {
-      console.log('streamer disconnected')
-    })
-    headers = []
-    const AACSplitter = new Split(AACSeparator)
-    AACSplitter.on('data', (data) => {
-      if (awsServer && awsServer.clients.length > 0) {
-        if (headers.length < 3) headers.push(data)
-        abroadcast(data)
-      }
-    }).on('error', (e) => {
-      console.log('splitter error ' + e)
-      process.exit(0)
-    })
-    socket.pipe(AACSplitter)
-  })
-  atcpServer.listen(conf.get('atcpport'))
-  if (conf.get('atcpport') == 'systemd') {
-    console.log('TCP server listening on systemd socket')
-  } else {
-    var address = atcpServer.address()
     if (address) console.log(
       `TCP server listening on ${address.address}:${address.port}`)
   }
@@ -119,8 +81,8 @@ if (conf.get('udpport')) {
     console.log(
       `UDP server listening on ${address.address}:${address.port}`)
   })
-  const NALSplitter = new Split(NALSeparator)
-  NALSplitter.on('data', (data) => {
+  const Splitter = new Split(Separator)
+  Splitter.on('data', (data) => {
     if (wsServer && wsServer.clients.length > 0) {
       broadcast(data)
     }
@@ -129,31 +91,9 @@ if (conf.get('udpport')) {
     process.exit(0)
   })
   udpServer.on('message', (msg, rinfo) => {
-    NALSplitter.write(msg)
+    Splitter.write(msg)
   })
   udpServer.bind(conf.get('udpport'))
-}
-
-if (conf.get('audpport')) {
-  const audpServer = dgram.createSocket('udp4')
-  audpServer.on('listening', () => {
-    var address = audpServer.address()
-    console.log(
-      `UDP server listening on ${address.address}:${address.port}`)
-  })
-  const AACSplitter = new Split(AACSeparator)
-  AACSplitter.on('data', (data) => {
-    if (awsServer && awsServer.clients.length > 0) {
-      abroadcast(data)
-    }
-  }).on('error', (e) => {
-    console.log('splitter error ' + e)
-    process.exit(0)
-  })
-  audpServer.on('message', (msg, rinfo) => {
-    AACSplitter.write(msg)
-  })
-  audpServer.bind(conf.get('audpport'))
 }
 
 if (conf.get('wsport')) {
@@ -174,26 +114,5 @@ if (conf.get('wsport')) {
     ws.on('close', (ws, id) => {
       console.log('client disconnected, watching ' + wsServer.clients.length)
     })
-  })
-}
-
-if (conf.get('awsport')) {
-  awsServer = new WSServer({ port: conf.get('awsport') })
-  console.log(
-    `AWS server listening on`, conf.get('awsport')
-  )
-  awsServer.on('connection', (aws) => {
-    if (awsServer.clients.length >= conf.get('alimit')) {
-      console.log('client rejected, limit reached')
-      aws.close()
-      return
-    }
-    /*console.log('client connected, listening ' + awsServer.clients.length)
-    for (let i in headers) {
-      aws.send(headers[i])
-    }
-    aws.on('close', (aws, id) => {
-      console.log('client disconnected, listening ' + awsServer.clients.length)
-    })*/
   })
 }
