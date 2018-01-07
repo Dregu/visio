@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="description" content="jMuxer - a simple javascript mp4 muxer for non-standard streaming communications protocol">
+    <meta name="keywords" content="h264 player, mp4 player, mse, mp4 muxing, jmuxer, aac player">
+    <title>JMuxer demo</title>
+</head>
+<body>
+<div id="container" style="width: 960px; margin: 0 auto">
+    <video width="906" controls autoplay id="player"></video>
+</div>
+<script>
+
+function concatTypedArrays(a, b) { // a, b TypedArray of same type
+    var c = new (a.constructor)(a.length + b.length);
+    c.set(a, 0);
+    c.set(b, a.length);
+    return c;
+}
+
+function concatBuffers(a, b) {
+    return concatTypedArrays(
+        new Uint8Array(a.buffer || a), 
+        new Uint8Array(b.buffer || b)
+    ).buffer;
+}
+
+function concatBytes(ui8a, byte) {
+    var b = new Uint8Array(1);
+    b[0] = byte;
+    return concatTypedArrays(ui8a, b);
+}
+
+  function parse(data) {
+      var input = new Uint8Array(data),
+          dv = new DataView(input.buffer),
+          duration,
+          audioLength,
+          audio,
+          video;
+
+      duration = dv.getUint16(0, true);
+      audioLength = dv.getUint16(2, true);
+      audio = input.subarray(4, (audioLength + 4));
+      video = input.subarray(audioLength + 4);
+
+      return {
+        audio: audio,
+        video: video,
+        duration: duration
+      };
+ }
+
+        var separator = new Uint8Array([0, 0, 0, 1])
+        function addSeparator(buffer) {
+                var tmp = new Uint8Array(4+buffer.byteLength)
+                tmp.set(separator, 0)
+                tmp.set(new Uint8Array(buffer), 4)
+                return tmp.buffer
+        }
+
+var h264buffer = new Uint8Array();
+var time = +new Date;
+
+window.onload = function() {
+    var socketURL = 'ws://'+window.location.hostname+':8081';
+    var jmuxer = new JMuxer({
+        node: 'player',
+        mode: 'video',
+        flushingTime: 1,
+        clearBuffer: false,
+        fps: 30,
+        debug: false
+     });
+
+     var ws = new WebSocket(socketURL);
+     ws.binaryType = 'arraybuffer';
+     ws.addEventListener('message',function(event) {
+         console.log(+new Date-time);
+         time = +new Date;
+         h264buffer = concatTypedArrays(h264buffer, concatTypedArrays(separator, new Uint8Array(event.data)));
+         //jmuxer.feed({video: concatTypedArrays(separator, new Uint8Array(event.data))});
+     });
+     var inter = setInterval(function() {
+          jmuxer.feed({video: h264buffer});
+          h264buffer = new Uint8Array();
+     }, 500);
+ }   
+</script>
+<script type="text/javascript" src="jmuxer.min.js"></script>
+</body>
+</html>
