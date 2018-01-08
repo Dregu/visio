@@ -8,13 +8,13 @@ const express = require('express')
 const systemd = require('systemd')
 const app = express()
 
-var wsServer, conf = require('nconf'), headers = [], Separator = new Buffer([0, 0, 0, 1])
+var wsServer, conf = require('nconf'), headers = [], Separator = new Buffer([0, 0, 0, 1]), httpClients = []
 
 conf.argv().defaults({
   tcpport: 8000,
   udpport: 8000,
+  httpport: 8080,
   wsport: 8081,
-  queryport: false,
   limit: 150,
   separator: false
 })
@@ -23,8 +23,19 @@ if (conf.get('separator')) {
   Separator = new Buffer(conf.get('separator').split(','))
 }
 
-if (conf.get('queryport')) {
+if (conf.get('httpport')) {
   app.get('/', (req, res) => {
+    if (wsServer.clients.length+httpClients.length >= conf.get('limit')) {
+      console.log('http client rejected, limit reached')
+      res.sendStatus(503)
+      return
+    }
+    res.writeHead(200, {'Content-Type': 'video/h264', 'Connection': 'Close'})
+    res.flushHeaders()
+    httpClients.push(res)
+    console.log('http client connected, watching ' + httpClients.length)
+  })
+  app.get('/stats', (req, res) => {
     var count = 0
     wsServer.clients.forEach((ws) => {
       if (ws.readyState == 1) {
@@ -34,15 +45,24 @@ if (conf.get('queryport')) {
     res.set('Content-type', 'text/plain')
     res.send(count.toString())
   })
-  app.listen(conf.get('queryport'))
+  app.listen(conf.get('httpport'))
 }
 
 function broadcast(data) {
+  var chunk = new Buffer(data.length + Separator.length);
+  chunk.set(Separator, 0);
+  chunk.set(data, 4);
   wsServer.clients.forEach((ws) => {
     if (ws.readyState === 1) {
-      ws.send(data, { binary: true })
+      ws.send(chunk, { binary: true })
     }
   })
+  if (httpClients.length > 0) {
+    httpClients = httpClients.filter(res => !res.socket.destroyed)
+    httpClients.forEach((res) => {
+      res.write(chunk)
+    })
+  }
 }
 
 if (conf.get('tcpport')) {
@@ -54,7 +74,7 @@ if (conf.get('tcpport')) {
     headers = []
     const Splitter = new Split(Separator)
     Splitter.on('data', (data) => {
-      if (wsServer && wsServer.clients.length > 0) {
+      if ((wsServer && wsServer.clients.length > 0) || (httpClients.length > 0)) {
         if (headers.length < 3) headers.push(data)
         broadcast(data)
       }
@@ -83,7 +103,7 @@ if (conf.get('udpport')) {
   })
   const Splitter = new Split(Separator)
   Splitter.on('data', (data) => {
-    if (wsServer && wsServer.clients.length > 0) {
+    if ((wsServer && wsServer.clients.length > 0) || (httpClients.length > 0)) {
       broadcast(data)
     }
   }).on('error', (e) => {
@@ -102,7 +122,7 @@ if (conf.get('wsport')) {
     `WS server listening on`, conf.get('wsport')
   )
   wsServer.on('connection', (ws) => {
-    if (wsServer.clients.length >= conf.get('limit')) {
+    if (wsServer.clients.length+httpClients.length >= conf.get('limit')) {
       console.log('client rejected, limit reached')
       ws.close()
       return

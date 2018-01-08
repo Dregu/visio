@@ -10,10 +10,11 @@
   "license": "MIT",
   "repository": "Dregu/visio",
   "dependencies": {
-    "express": "^4.15.2",
-    "nconf": "^0.8.4",
+    "express": "^4.16.2",
+    "jmuxer": "^1.0.0",
+    "nconf": "^0.10.0",
     "stream-split": "^1.1.0",
     "systemd": "^0.2.6",
-    "uws": "^0.14.5"
+    "uws": "^9.14.0"
   }
 }
